@@ -13,14 +13,15 @@ public class PlayerController : MonoBehaviour{
     private void Update() {
         playerCamera.transform.position = transform.position + cameraOffset;
         playerCamera.transform.rotation = Quaternion.Euler(cameraRotation);
-
-        if (Input.GetKey(KeyCode.A)) 
+        
+        if (Input.GetKey(KeyCode.A)) {
             _playerPhysics.ApplySidewaysMomentum(-1);
-
-        if (Input.GetKey(KeyCode.D)) 
+        }
+        
+        if (Input.GetKey(KeyCode.D))
             _playerPhysics.ApplySidewaysMomentum(1);
 
-        if (Input.GetKey(KeyCode.Space)) {
+        if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D)) {
             _playerPhysics.CancelStrafe();
         }
     }

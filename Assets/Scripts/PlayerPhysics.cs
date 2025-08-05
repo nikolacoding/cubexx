@@ -1,6 +1,8 @@
 using System;
+using Unity.Mathematics;
 using Unity.Mathematics.Geometry;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Math = System.Math;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -8,10 +10,11 @@ public class PlayerPhysics : MonoBehaviour{
     private Rigidbody _rb;
     [SerializeField] private float forwardForcePerFrame;
     [SerializeField] private float forwardVelocityBound;
-
-    [SerializeField] private float sidewaysForce;
+    [FormerlySerializedAs("sidewaysForce")]
+    [Space]
+    [SerializeField] private float sidewaysImpulse;
     [SerializeField] private float sidewaysVelocityBound;
-
+    [Space]
     [SerializeField] private float cancelStrafeStep;
     [SerializeField] private float cancelStrafeStepDivisor;
 
@@ -32,7 +35,7 @@ public class PlayerPhysics : MonoBehaviour{
         if (sign == 0)
             throw new ArithmeticException("Sideways momentum applied with sign 0.");
         
-        _rb.AddForce(sign * sidewaysForce * Vector3.right);
+        _rb.AddForce(sign * sidewaysImpulse * Vector3.right, ForceMode.Impulse);
 
         float currentVelocityX = _rb.linearVelocity.x;
         float currentVelocityY = _rb.linearVelocity.y;
@@ -55,20 +58,16 @@ public class PlayerPhysics : MonoBehaviour{
             ? new Vector3(Math.Clamp(currentVelocityX - cancelStrafeStep / cancelStrafeStepDivisor, 0f, sidewaysVelocityBound), currentVelocityY, currentVelocityZ)
             : new Vector3(Math.Clamp(currentVelocityX + cancelStrafeStep / cancelStrafeStepDivisor, -sidewaysVelocityBound, 0f), currentVelocityY, currentVelocityZ);
     }
+    
+    public bool IsStrafingRight(float velocityThreshold = 0f) => _rb.linearVelocity.x > velocityThreshold;
 
-    public void InvertStrafeMomentum(float multiplier) {
-        _rb.linearVelocity = new Vector3(-multiplier * _rb.linearVelocity.x, _rb.linearVelocity.y, _rb.linearVelocity.z);
-    }
-
-    public bool IsStrafingRight() {
-        return _rb.linearVelocity.x > 0f;
-    }
-
-    public bool IsStrafingLeft() {
-        return _rb.linearVelocity.x < 0f;
-    }
+    public bool IsStrafingLeft(float velocityThreshold = 0f) => _rb.linearVelocity.x < -velocityThreshold;
     
     private void FixedUpdate() {
         ApplyForwardMomentum();
+    }
+
+    private void Update() {
+        
     }
 }
